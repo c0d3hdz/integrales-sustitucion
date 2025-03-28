@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="Calculadora de integrales por sustitución simple" />
+        <meta name="keywords" content="integrales, cálculo, matemáticas, sustitución" />
+        <meta name="author" content="c0d3hdz" />
+        <meta name="robots" content="index, follow" />
+        <meta name="theme-color" content="#4caf50" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@c0d3hdz" />
+        <meta name="twitter:creator" content="@c0d3hdz" />
+        <meta property="og:title" content="Integrales por Sustitución" />
+        <meta property="og:description" content="Calculadora de integrales por sustitución simple" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://c0d3hdz.github.io/integrales-sustitucion/" />
+        <meta property="og:image" content="https://c0d3hdz.github.io/integrales-sustitucion/preview.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Integrales por Sustitución" />
+        <meta property="og:locale" content="es_ES" />
+        <meta property="og:locale:alternate" content="es_MX" />
+        <title>Integrales por Sustitución</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #e9fffa;
+                background-image: radial-gradient(at 47% 33%, hsl(88, 87%, 70%) 0, transparent 59%),
+                    radial-gradient(at 82% 65%, hsl(198, 100%, 50%) 0, transparent 55%);
+                background-image: cover !important;
+                background-attachment: fixed;
+            }
+
+            .container {
+                background: #f0f8ff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            input {
+                width: 300px;
+                padding: 8px;
+                margin: 10px 0;
+            }
+            button {
+                background: #4caf50;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            .result {
+                background: white;
+                padding: 15px;
+                margin-top: 20px;
+                border-radius: 5px;
+            }
+            #compatibilidad ul {
+                list-style-type: none;
+                padding-left: 20px;
+            }
+
+            #compatibilidad li {
+                margin: 8px 0;
+                padding: 5px;
+                border-left: 3px solid transparent;
+            }
+
+            #compatibilidad li:hover {
+                background: #f8f9fa;
+            }
+
+            #compatibilidad ul ul {
+                margin-left: 20px;
+                list-style-type: circle;
+            }
+
+            #compatibilidad h4 {
+                padding-bottom: 5px;
+                border-bottom: 2px solid;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Integrales por Sustitución Simple</h1>
+            <p>Ingrese la integral en formato:</p>
+            <p><strong>[coeficiente]x[^potencia]*función(x^[potencia])</strong></p>
+            <input type="text" id="integralInput" placeholder="Ej: 2x*cos(x^2)" />
+            <button onclick="calcularIntegral()">Resolver</button>
+            <div id="resultado" class="result"></div>
+        </div>
+        <div id="compatibilidad" style="margin-top: 20px; border-top: 1px solid #ccc; padding: 15px">
+            <h3>Integrales Soportadas</h3>
+
+            <div style="display: flex; gap: 30px; margin-top: 15px">
+                <div style="flex: 1">
+                    <h4 style="color: #4caf50">✅ Funcionan</h4>
+                    <ul>
+                        <li>2x*cos(x^2)</li>
+                        <li>3x²*exp(x³)</li>
+                        <li>4x³*sqrt(x⁴)</li>
+                        <li>6x⁵*log(x⁶)</li>
+                        <li>4x³*sin(x⁴)</li>
+                    </ul>
+                </div>
+
+                <div style="flex: 1">
+                    <h4 style="color: #f44336">❌ No funcionan</h4>
+                    <ul>
+                        <li>5x⁴/(1+x⁵) <em>(resultado incorrecto)</em></li>
+                        <li>x*sin(x²) <em>(ajuste decimal)</em></li>
+                        <li>2x/(1+x²) <em>(mapeo erróneo)</em></li>
+                        <li>x²*cos(x³) <em>(coeficiente)</em></li>
+                        <li>5x*exp(x²) <em>(ajuste no entero)</em></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; background: #fff3e0; padding: 10px; border-radius: 5px">
+                <strong>Limitaciones actuales:</strong>
+                <ul>
+                    <li>❌ Ajustes no enteros</li>
+                    <li>❌ Funciones compuestas complejas</li>
+                    <li>❌ Argumentos con sumas/restas</li>
+                </ul>
+            </div>
+        </div>
+        <script>
+            function calcularIntegral() {
+                const input = document.getElementById('integralInput').value
+                const resultadoDiv = document.getElementById('resultado')
+                resultadoDiv.innerHTML = ''
+
+                try {
+                    const parsed = parseIntegral(input)
+
+                    const { coeficiente, variable, potencia, funcion, argumento } = parsed
+                    const derivada = calcularDerivada(argumento)
+                    const ajuste = coeficiente / derivada.coeficiente
+
+                    if (Math.abs(ajuste - Math.round(ajuste)) > 0.001) {
+                        throw new Error('No cumple la condición de sustitución (coeficiente ≠ derivada)')
+                    }
+
+                    const integral = resolverIntegral(funcion, ajuste, argumento)
+
+                    resultadoDiv.innerHTML = `
+                    <h3>∫${input} dx</h3>
+                    <p><strong>Paso 1:</strong> Identificar componentes</p>
+                    <p>• Parte derivada: ${coeficiente}x^${potencia} (du = ${derivada.expression} dx)</p>
+                    <p>• Función compuesta: ${funcion}(u) donde u = ${argumento}</p>
+                    
+                    <p><strong>Paso 2:</strong> Ajustar constantes</p>
+                    <p>Coeficiente necesario: ${derivada.coeficiente}</p>
+                    <p>Factor de ajuste: ${coeficiente}/${derivada.coeficiente} = ${ajuste}</p>
+                    
+                    <p><strong>Paso 3:</strong> Aplicar sustitución</p>
+                    <p>∫${funcion}(u) * ${ajuste} du</p>
+                    
+                    <p><strong>Paso 4:</strong> Integrar</p>
+                    <p>${ajuste !== 1 ? ajuste : ''}${integral}</p>
+                    
+                    <p><strong>Resultado final:</strong> ${ajuste !== 1 ? ajuste : ''}${integral.replace(
+                        /u/g,
+                        `(${argumento})`,
+                    )} + C</p>
+                `
+                } catch (error) {
+                    resultadoDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`
+                }
+            }
+
+            function parseIntegral(input) {
+                //TODO:  Admite múltiples formatos pero aquí se espera que sea de la forma [coef]x^[potencia]*función(x^[potencia])
+                const pattern = /^(\d*\.?\d*)?x\^?(\d*)?\*?([a-z]+)\(x\^?(\d*)\)$/i
+                const match = input.match(pattern)
+
+                if (!match) throw new Error('Formato inválido. Use: [coef]x^[potencia]*función(x^[potencia])')
+
+                return {
+                    coeficiente: match[1] ? parseFloat(match[1]) : 1,
+                    variable: 'x',
+                    potencia: match[2] ? parseInt(match[2]) : 1,
+                    funcion: match[3],
+                    argumento: `x^${match[4] || (match[3].toLowerCase() === 'sqrt' ? '0.5' : '1')}`,
+                }
+            }
+
+            function calcularDerivada(argumento) {
+                const [_, base, exp] = argumento.match(/x\^?(\d*\.?\d*)/) || []
+                const exponente = exp ? parseFloat(exp) : 1
+
+                return {
+                    coeficiente: exponente,
+                    expression: `${exponente}x^${exponente - 1}`,
+                }
+            }
+
+            function resolverIntegral(funcion, ajuste, argumento) {
+                //funciones integradas permitidas sisisisi 😊🍎
+                const integrales = {
+                    cos: 'sin(u)',
+                    sin: '-cos(u)',
+                    exp: 'exp(u)',
+                    sqrt: '(2/3)u^(3/2)',
+                    log: 'u·log(u) - u',
+                    tan: '-ln|cos(u)|',
+                    sec: 'ln|sec(u) + tan(u)|',
+                    '/(1+': 'arctan(u)', // Para 1/(1+u^2)
+                }
+
+                let result = integrales[funcion.toLowerCase()] || '???'
+
+                // Caso especial para fracciones y raices .... aun puede mejorar ya que no funciona con la mayoria de los casos ....🍎
+                if (funcion.includes('/')) {
+                    if (funcion.match(/1\/(1\+u\^2)/)) result = 'arctan(u)'
+                    else if (funcion.match(/1\/sqrt(1-u\^2)/)) result = 'arcsin(u)'
+                }
+
+                return result
+            }
+        </script>
+    </body>
+</html>
